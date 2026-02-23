@@ -42,22 +42,23 @@ const Usuarios: React.FC = () => {
     e.preventDefault();
     try {
       if (editingUser) {
-        await axios.put(`${API_URL}/usuarios/${editingUser.id}`, {
+        const res = await axios.put(`${API_URL}/usuarios/${editingUser.id}`, {
           nome: formData.nome,
           email: formData.email,
           status: editingUser.status,
         });
+        setUsuarios(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...res.data } : u));
       } else {
-        await axios.post(`${API_URL}/usuarios`, {
+        const res = await axios.post(`${API_URL}/usuarios`, {
           nome: formData.nome,
           email: formData.email,
         });
+        setUsuarios(prev => [res.data, ...prev]);
         alert('Usuário criado com sucesso! A senha padrão é 123456');
       }
       setIsModalOpen(false);
       setEditingUser(null);
       setFormData({ nome: '', email: '' });
-      fetchUsuarios();
     } catch (err: any) {
       if (err.response?.status === 409) {
         alert('E-mail já cadastrado.');
@@ -69,12 +70,15 @@ const Usuarios: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    const itemRemovido = usuarios.find(u => u.id === id);
+    setUsuarios(prev => prev.filter(u => u.id !== id));
+    setDeletingId(null);
     try {
       await axios.delete(`${API_URL}/usuarios/${id}`);
-      setDeletingId(null);
-      fetchUsuarios();
     } catch (err) {
       console.error('Erro ao deletar usuário:', err);
+      if (itemRemovido) setUsuarios(prev => [...prev, itemRemovido]);
+      alert('Erro ao excluir usuário. A operação foi revertida.');
     }
   };
 

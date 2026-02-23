@@ -158,11 +158,14 @@ const Obras: React.FC = () => {
   // Remover material do estoque da obra
   const handleRemoveMaterial = async (itemId: number) => {
     if (!window.confirm('Tem certeza que deseja remover este material desta obra?')) return;
+    const itemRemovido = estoqueObra.find(e => e.id === itemId);
+    setEstoqueObra(prev => prev.filter(e => e.id !== itemId));
     try {
       await axios.delete(`${API_URL}/estoque/${itemId}`);
-      fetchEstoqueObra();
     } catch (err) {
       console.error('Erro ao remover material:', err);
+      if (itemRemovido) setEstoqueObra(prev => [...prev, itemRemovido]);
+      alert('Erro ao remover material. A operação foi revertida.');
     }
   };
 
@@ -180,16 +183,17 @@ const Obras: React.FC = () => {
     try {
       const qty = Number(linkQuantidade) || 0;
       const status = qty > 100 ? 'OK' : qty > 20 ? 'Baixo' : 'Crítico';
-      await axios.post(`${API_URL}/estoque`, {
+      const res = await axios.post(`${API_URL}/estoque`, {
         obra_id: selectedObraId,
         material_id: linkMaterialId,
         quantidade: qty,
         status
       });
+      setEstoqueObra(prev => [...prev, res.data]);
       setLinkModalOpen(false);
-      fetchEstoqueObra();
     } catch (err) {
       console.error('Erro ao vincular material:', err);
+      alert('Erro ao vincular material.');
     }
   };
 
@@ -200,17 +204,18 @@ const Obras: React.FC = () => {
     try {
       const qty = Number(estoqueNovaQtd) || 0;
       const status = qty > 100 ? 'OK' : qty > 20 ? 'Baixo' : 'Crítico';
-      await axios.post(`${API_URL}/estoque`, {
+      const res = await axios.post(`${API_URL}/estoque`, {
         obra_id: selectedObraId,
         material_id: estoqueEditItem.material_id,
         quantidade: qty,
         status
       });
+      setEstoqueObra(prev => prev.map(e => e.material_id === estoqueEditItem.material_id ? { ...e, ...res.data } : e));
       setEstoqueModalOpen(false);
       setEstoqueEditItem(null);
-      fetchEstoqueObra();
     } catch (err) {
       console.error('Erro ao atualizar estoque:', err);
+      alert('Erro ao atualizar estoque.');
     }
   };
 
@@ -218,14 +223,15 @@ const Obras: React.FC = () => {
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/obras`, { nome: newObraName, endereco: newObraEndereco, status: newObraStatus });
+      const res = await axios.post(`${API_URL}/obras`, { nome: newObraName, endereco: newObraEndereco, status: newObraStatus });
+      setProjects(prev => [res.data, ...prev]);
       setIsAddModalOpen(false);
       setNewObraName('');
       setNewObraEndereco('');
       setNewObraStatus('Em Andamento');
-      fetchObras();
     } catch (err) {
       console.error('Erro ao criar obra:', err);
+      alert('Erro ao criar obra.');
     }
   };
 
@@ -243,17 +249,18 @@ const Obras: React.FC = () => {
     e.preventDefault();
     if (!editObraId) return;
     try {
-      await axios.put(`${API_URL}/obras/${editObraId}`, {
+      const res = await axios.put(`${API_URL}/obras/${editObraId}`, {
         nome: editObraName,
         endereco: editObraEndereco,
         status: editObraStatus,
         progresso: 0,
       });
+      setProjects(prev => prev.map(p => p.id === editObraId ? { ...p, ...res.data } : p));
       setIsEditModalOpen(false);
       setEditObraId(null);
-      fetchObras();
     } catch (err) {
       console.error('Erro ao editar obra:', err);
+      alert('Erro ao editar obra.');
     }
   };
 
@@ -262,25 +269,29 @@ const Obras: React.FC = () => {
     e.preventDefault();
     if (!alocPessoaId || !selectedObraId) return;
     try {
-      await axios.post(`${API_URL}/alocacoes`, {
+      const res = await axios.post(`${API_URL}/alocacoes`, {
         pessoa_id: alocPessoaId,
         obra_id: selectedObraId,
       });
+      setEquipeObra(prev => [...prev, res.data]);
       setAlocModalOpen(false);
       setAlocPessoaId('');
-      fetchEquipeObra();
     } catch (err) {
       console.error('Erro ao alocar pessoa:', err);
+      alert('Erro ao alocar pessoa.');
     }
   };
 
   // Desalocar colaborador da obra
   const handleDesalocar = async (alocacaoId: number) => {
+    const itemRemovido = equipeObra.find(e => e.id === alocacaoId);
+    setEquipeObra(prev => prev.filter(e => e.id !== alocacaoId));
     try {
       await axios.delete(`${API_URL}/alocacoes/${alocacaoId}`);
-      fetchEquipeObra();
     } catch (err) {
       console.error('Erro ao desalocar pessoa:', err);
+      if (itemRemovido) setEquipeObra(prev => [...prev, itemRemovido]);
+      alert('Erro ao desalocar pessoa. A operação foi revertida.');
     }
   };
 
@@ -407,12 +418,15 @@ const Obras: React.FC = () => {
   };
 
   const handleDeleteProject = async (id: number) => {
+    const itemRemovido = projects.find(p => p.id === id);
+    setProjects(prev => prev.filter(p => p.id !== id));
+    setDeletingId(null);
     try {
       await axios.delete(`${API_URL}/obras/${id}`);
-      setDeletingId(null);
-      fetchObras();
     } catch (err) {
       console.error('Erro ao deletar obra:', err);
+      if (itemRemovido) setProjects(prev => [...prev, itemRemovido]);
+      alert('Erro ao excluir obra. A operação foi revertida.');
     }
   };
 

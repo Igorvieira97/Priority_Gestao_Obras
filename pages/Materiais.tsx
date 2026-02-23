@@ -60,24 +60,28 @@ const Materiais: React.FC = () => {
     e.preventDefault();
     try {
       if (editingMaterial) {
-        await axios.put(`${API_URL}/materiais/${editingMaterial.id}`, formData);
+        const res = await axios.put(`${API_URL}/materiais/${editingMaterial.id}`, formData);
+        setMaterials(prev => prev.map(m => m.id === editingMaterial.id ? { ...m, ...res.data } : m));
       } else {
-        await axios.post(`${API_URL}/materiais`, formData);
+        const res = await axios.post(`${API_URL}/materiais`, formData);
+        setMaterials(prev => [res.data, ...prev]);
       }
       setIsModalOpen(false);
-      fetchMateriais();
     } catch (err) {
       console.error('Erro ao salvar material:', err);
     }
   };
 
   const handleDelete = async (id: number) => {
+    const itemRemovido = materials.find(m => m.id === id);
+    setMaterials(prev => prev.filter(m => m.id !== id));
+    setDeletingId(null);
     try {
       await axios.delete(`${API_URL}/materiais/${id}`);
-      setDeletingId(null);
-      fetchMateriais();
     } catch (err) {
       console.error('Erro ao deletar material:', err);
+      if (itemRemovido) setMaterials(prev => [...prev, itemRemovido]);
+      alert('Erro ao excluir material. A operação foi revertida.');
     }
   };
 

@@ -112,15 +112,16 @@ const Financeiro: React.FC = () => {
     };
     try {
       if (editId) {
-        await axios.put(`${API_URL}/despesas/${editId}`, payload);
+        const res = await axios.put(`${API_URL}/despesas/${editId}`, payload);
+        setDespesas(prev => prev.map(d => d.id === editId ? { ...d, ...res.data } : d));
       } else {
-        await axios.post(`${API_URL}/despesas`, payload);
+        const res = await axios.post(`${API_URL}/despesas`, payload);
+        setDespesas(prev => [res.data, ...prev]);
       }
       setIsModalOpen(false);
       setEditId(null);
       setFormData({ descricao: '', valor: '', categoria: categorias[0], data: new Date().toISOString().split('T')[0], observacao: '', comprovante: '' });
       setFileName('');
-      fetchDespesas();
     } catch (err) {
       console.error('Erro ao salvar despesa:', err);
     }
@@ -141,21 +142,25 @@ const Financeiro: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    const itemRemovido = despesas.find(d => d.id === id);
+    setDespesas(prev => prev.filter(d => d.id !== id));
+    setDeletingId(null);
     try {
       await axios.delete(`${API_URL}/despesas/${id}`);
-      setDeletingId(null);
-      fetchDespesas();
     } catch (err) {
       console.error('Erro ao deletar despesa:', err);
+      if (itemRemovido) setDespesas(prev => [...prev, itemRemovido]);
+      alert('Erro ao excluir despesa. A operação foi revertida.');
     }
   };
 
   const handleTogglePago = async (despesa: Despesa) => {
+    setDespesas(prev => prev.map(d => d.id === despesa.id ? { ...d, pago: !d.pago } : d));
     try {
       await axios.patch(`${API_URL}/despesas/${despesa.id}/pagamento`, { pago: !despesa.pago });
-      fetchDespesas();
     } catch (err) {
       console.error('Erro ao alterar status de pagamento:', err);
+      setDespesas(prev => prev.map(d => d.id === despesa.id ? { ...d, pago: despesa.pago } : d));
     }
   };
 
