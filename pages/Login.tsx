@@ -29,7 +29,7 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      const res = await axios.post('http://localhost:3000/api/usuarios/login', { email, senha: password });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/usuarios/login`, { email, senha: password });
       if (rememberMe) {
         localStorage.setItem('savedEmail', email);
         localStorage.setItem('savedPassword', password);
@@ -65,7 +65,7 @@ const Login: React.FC = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:3000/api/usuarios/primeiro-acesso', {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/usuarios/primeiro-acesso`, {
         id: tempUserData.id,
         novaSenha: newPassword,
       });

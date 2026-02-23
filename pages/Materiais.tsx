@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Package, Plus, X, Check, Edit2, Trash2, ShoppingCart } from 'lucide-react';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 interface Material {
   id: number;

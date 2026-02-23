@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Phone, Award, Plus, X, Building2, Check, Edit2, Trash2, Search, DollarSign } from 'lucide-react';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 interface ObraAlocada {
   id: number;
