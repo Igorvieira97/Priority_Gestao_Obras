@@ -16,7 +16,7 @@ export const listarUsuarios = async (req, res) => {
 export const criarUsuario = async (req, res) => {
   try {
     const { nome, email } = req.body;
-    const senhaPadrao = '123456';
+    const senhaPadrao = process.env.DEFAULT_PASSWORD || '123456';
     const salt = await bcrypt.genSalt(10);
     const senhaHash = await bcrypt.hash(senhaPadrao, salt);
     const result = await pool.query(
