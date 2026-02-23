@@ -68,24 +68,30 @@ const Pessoas: React.FC = () => {
     e.preventDefault();
     try {
       if (editingPerson) {
-        await axios.put(`${API_URL}/pessoas/${editingPerson.id}`, formData);
+        const res = await axios.put(`${API_URL}/pessoas/${editingPerson.id}`, formData);
+        setPeople(prev => prev.map(p => p.id === editingPerson.id ? { ...p, ...res.data } : p));
       } else {
-        await axios.post(`${API_URL}/pessoas`, formData);
+        const res = await axios.post(`${API_URL}/pessoas`, formData);
+        setPeople(prev => [{ ...res.data, obras: [] }, ...prev]);
       }
       setIsModalOpen(false);
-      fetchPessoas();
     } catch (err) {
       console.error('Erro ao salvar pessoa:', err);
     }
   };
 
   const handleDelete = async (id: number) => {
+    const pessoaRemovida = people.find(p => p.id === id);
+    setPeople(prev => prev.filter(p => p.id !== id));
+    setDeletingId(null);
     try {
       await axios.delete(`${API_URL}/pessoas/${id}`);
-      setDeletingId(null);
-      fetchPessoas();
     } catch (err) {
       console.error('Erro ao deletar pessoa:', err);
+      if (pessoaRemovida) {
+        setPeople(prev => [...prev, pessoaRemovida]);
+      }
+      alert('Erro ao excluir colaborador. A operação foi revertida.');
     }
   };
 
