@@ -18,7 +18,7 @@ interface Person {
   obras: ObraAlocada[];
 }
 
-const roles = ['Engenheiro(a)', 'Arquiteto(a)', 'Mestre de Obras', 'Pedreiro', 'Eletricista', 'Encanador', 'Auxiliar'];
+const roles = ['Engenheiro(a)', 'Arquiteto(a)', 'Mestre de Obras', 'Pedreiro', 'Servente', 'Eletricista', 'Encanador', 'Auxiliar'];
 
 const Pessoas: React.FC = () => {
   const [people, setPeople] = useState<Person[]>([]);
